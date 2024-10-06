@@ -1,0 +1,46 @@
+<html>
+    <head>
+    <title>Game viewer</title>
+    </html>
+    <body>
+        <h1>Enter Chess.com Username:</h1>
+        <form id="chessusername" action='/fetch' method="post">
+            <input type="text" name="username" placeholder="ex:Anugun22" required>
+            <button type="submit">Enter</button>
+            <button type="reset">Reset</button>
+        </form>
+
+        {% if games %}
+            <h2>Games for user {{username}}</h2>
+            <ul id="games">
+                {% for game in games %}
+                    <li>
+                        <strong>White:</strong> {{ game.white.username }}<br>
+                        <strong>Black:</strong> {{ game.black.username }}<br>
+                        <strong>Result:</strong> {{ game.white.result }} {{game.black.result}}<br>
+                        <strong>URL:</strong> <a href="{{ game.url }}">View Game</a>
+                        <form action="/save_game" method="post" style="display:inline;">
+                            <input type="hidden" name="game_data" value="{{game|tojson}}">
+                            <input type="hidden" name="username" value="{{usrname}}">
+                            <button type="submit">Save Game</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+
+        {% if error %}
+            <h2 style="color:red;">ERROR</h2>
+            <p>{{error}}</p>
+        {% endif %}
+
+        {% if success %}
+        <h2 class="success">SUCCESS</h2>
+        <p>{{ success }}</p>
+        {% endif %}
+        <form action="{{ url_for('logout') }}" method="get">
+            <button type="submit">Logout</button>
+        </form>
+    </body>
+</html>
