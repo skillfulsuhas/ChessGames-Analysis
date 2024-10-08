@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Analyzer - Saved Games</title>
+</head>
+<body>
+    <h1>Saved Games</h1>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    {% if saved_games %}
+        <table border="1">
+            <tr>
+                <th>ID</th>
+                <th>White Player</th>
+                <th>Black Player</th>
+                <th>Result</th>
+            </tr>
+            {% for game in saved_games %}
+                <tr>
+                    <td>{{ game.id }}</td>
+                    <td>{{ game.white_player }}</td>
+                    <td>{{ game.black_player }}</td>
+                    <td>{{ game.white_result }} - {{ game.black_result }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No saved games found.</p>
+    {% endif %}
+
+    <a href="{{ url_for('index') }}">Back to Home</a>
+</body>
+</html>

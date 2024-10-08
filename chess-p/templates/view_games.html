@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Analyzer - View Games</title>
+</head>
+<body>
+    <h1>View Games</h1>
+    <form action="{{ url_for('fetch') }}" method="post">
+        <input type="text" name="username" placeholder="Enter Chess.com username" required>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    {% if games %}
+        <h2>Games for {{ username }}</h2>
+        {% for game in games %}
+            <div>
+                <p>White: {{ game.white.username }} ({{ game.white.rating }})</p>
+                <p>Black: {{ game.black.username }} ({{ game.black.rating }})</p>
+                <p>Result: {{ game.pgn | extract_termination }}</p>
+                <form action="{{ url_for('save_game') }}" method="post">
+                    <input type="hidden" name="game_data" value="{{ game | tojson | forceescape }}">
+                    <button type="submit">Save Game</button>
+                </form>
+            </div>
+            <hr>
+        {% endfor %}
+    {% endif %}
+
+    <a href="{{ url_for('index') }}">Back to Home</a>
+</body>
+</html>

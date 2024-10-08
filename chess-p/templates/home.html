@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Analyzer - Home</title>
+</head>
+<body>
+    <h1>Welcome to Chess Analyzer</h1>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('view_games') }}">View Games</a></li>
+            <li><a href="{{ url_for('saved_games') }}">Saved Games</a></li>
+            <li><a href="{{ url_for('delete_game') }}">Delete Game</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </nav>
+</body>
+</html>
