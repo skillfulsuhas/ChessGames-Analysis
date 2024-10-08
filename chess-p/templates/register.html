@@ -4,24 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Chess Game Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
+            background-color: #1e1e1e;
+            color: white;
             max-width: 400px;
             margin: 0 auto;
             padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         h1 {
             text-align: center;
+            color: #4CAF50;
         }
         form {
             display: flex;
             flex-direction: column;
-            margin-bottom: 20px;  /* Add this line for spacing */
+            margin-bottom: 20px;
         }
         input[type="text"], input[type="password"] {
             margin-bottom: 10px;
-            padding: 5px;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
         }
         input[type="submit"] {
             background-color: #4CAF50;
@@ -29,6 +37,8 @@
             padding: 10px;
             border: none;
             cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
         }
         input[type="submit"]:hover {
             background-color: #45a049;
@@ -40,6 +50,9 @@
         .success {
             color: green;
             margin-bottom: 10px;
+        }
+        a {
+            color: #4CAF50;
         }
     </style>
 </head>

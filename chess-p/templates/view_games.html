@@ -4,34 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chess Analyzer - View Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .container {
+            background-color: #2e2e2e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+        }
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .game-info {
+            background-color: #383838;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+        .success {
+            color: green;
+            margin-bottom: 10px;
+        }
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>View Games</h1>
-    <form action="{{ url_for('fetch') }}" method="post">
-        <input type="text" name="username" placeholder="Enter Chess.com username" required>
-        <button type="submit">Search</button>
-    </form>
+    <div class="container">
+        <h1>View Games</h1>
+        <form action="{{ url_for('fetch') }}" method="post">
+            <input type="text" name="username" placeholder="Enter Chess.com username" required>
+            <button type="submit">Search</button>
+        </form>
 
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
 
-    {% if games %}
-        <h2>Games for {{ username }}</h2>
-        {% for game in games %}
-            <div>
-                <p>White: {{ game.white.username }} ({{ game.white.rating }})</p>
-                <p>Black: {{ game.black.username }} ({{ game.black.rating }})</p>
-                <p>Result: {{ game.pgn | extract_termination }}</p>
-                <form action="{{ url_for('save_game') }}" method="post">
-                    <input type="hidden" name="game_data" value="{{ game | tojson | forceescape }}">
-                    <button type="submit">Save Game</button>
-                </form>
-            </div>
-            <hr>
-        {% endfor %}
-    {% endif %}
+        {% if games %}
+            <h2>Games for {{ username }}</h2>
+            {% for game in games %}
+                <div class="game-info">
+                    <p><strong>White:</strong> {{ game.white.username }} ({{ game.white.rating }})</p>
+                    <p><strong>Black:</strong> {{ game.black.username }} ({{ game.black.rating }})</p>
+                    <p><strong>Result:</strong> {{ game.pgn | extract_termination }}</p>
+                    <form action="{{ url_for('save_game') }}" method="post">
+                        <input type="hidden" name="game_data" value="{{ game | tojson | forceescape }}">
+                        <button type="submit">Save Game</button>
+                    </form>
+                </div>
+            {% endfor %}
+        {% endif %}
 
-    <a href="{{ url_for('index') }}">Back to Home</a>
+        <a href="{{ url_for('index') }}">Back to Home</a>
+    </div>
 </body>
 </html>
