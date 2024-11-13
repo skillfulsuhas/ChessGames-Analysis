@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Analyzer - Delete Game</title>
+    <title>Chess Analyzer - User Statistics</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
     <style>
         body {
@@ -34,7 +34,7 @@
             padding: 2rem;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-            max-width: 400px;
+            max-width: 800px;
             margin: 0 auto;
         }
         h1 {
@@ -45,51 +45,52 @@
             text-align: center;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
-        form {
-            margin-bottom: 20px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
         }
-        label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        input[type="number"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-bottom: 10px;
+        th, td {
+            padding: 12px;
+            text-align: left;
             border: 1px solid #8B4513;
-            border-radius: 5px;
-            font-family: 'Roboto Mono', monospace;
         }
-        button {
+        th {
             background-color: #8B4513;
             color: #f0d9b5;
-            padding: 10px;
+        }
+        tr:nth-child(even) {
+            background-color: #e6ccb3;
+        }
+        tr:hover {
+            background-color: #d4b08c;
+        }
+        .update-btn {
+            padding: 5px 10px;
+            background-color: #8B4513;
+            color: #f0d9b5;
             border: none;
+            border-radius: 3px;
             cursor: pointer;
-            border-radius: 5px;
-            font-size: 16px;
-            width: 100%;
-            font-family: 'Roboto Mono', monospace;
             transition: all 0.3s ease;
         }
-        button:hover {
+        .update-btn:hover {
             background-color: #A0522D;
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-        .error, .success {
+        .success, .error {
             padding: 10px;
             margin-bottom: 10px;
             border-radius: 5px;
         }
-        .error {
-            color: #D8000C;
-            background-color: #FFD2D2;
-        }
         .success {
-            color: #4F8A10;
             background-color: #DFF2BF;
+            color: #4F8A10;
+        }
+        .error {
+            background-color: #FFD2D2;
+            color: #D8000C;
         }
         a {
             color: #8B4513;
@@ -111,13 +112,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>Delete Game</h1>
-        <form action="{{ url_for('delete_game') }}" method="post">
-            <label for="game_id">Enter Game ID to delete:</label>
-            <input type="number" name="game_id" id="game_id" required>
-            <button type="submit">Delete Game</button>
-        </form>
-
+        <h1>User Statistics</h1>
+        
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -126,12 +122,39 @@
             {% endif %}
         {% endwith %}
 
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Games as White Won</th>
+                    <th>Games as Black Won</th>
+                    <th>Draws</th>
+                    <th>Total Games</th>
+              
+                </tr>
+            </thead>
+            <tbody>
+                {% for stat in user_stats %}
+                    <tr>
+                        <td>{{ stat.username }}</td>
+                        <td>{{ stat.white_win }}</td>
+                        <td>{{ stat.black_win }}</td>
+                        <td>{{ stat.no_of_draws }}</td>
+                        <td>{{ stat.white_win + stat.black_win + stat.no_of_draws }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
         <a href="{{ url_for('index') }}">Back to Home</a>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
-            const form = document.querySelector('form');
-            form.classList.add('animate-in');
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach((row, index) => {
+                row.style.animationDelay = `${index * 0.1}s`;
+                row.classList.add('animate-in');
+            });
         });
     </script>
 </body>

@@ -1,18 +1,15 @@
 from flask import Flask, request, render_template, redirect, url_for, session, flash, jsonify
 import requests, mysql.connector, json
 from werkzeug.security import generate_password_hash, check_password_hash
-
+import re
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Change this to a random secret key
-
-import re
 
 def extract_termination(pgn):
     match = re.search(r'\[Termination "(.*?)"\]', pgn)
     return match.group(1) if match else "Unknown"
 
-# Add this function to your existing imports
 app.jinja_env.filters['extract_termination'] = extract_termination
 
 def create_db_connection():
@@ -22,7 +19,7 @@ def create_db_connection():
 @app.route('/')
 def index():
     if 'user_id' in session:
-        return render_template('home.html')
+        return render_template('home.html', username=session.get('username'))
     return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -136,6 +133,8 @@ def save_game():
     game_white = game.get('white', {}).get('username', '')
     game_black = game.get('black', {}).get('username', '')
     game_id = game.get('url', '')
+    game_white_result = game.get('white', {}).get('result', '')
+    game_black_result = game.get('black', {}).get('result', '')
     
     connection = create_db_connection()
     cursor = connection.cursor()
@@ -145,14 +144,7 @@ def save_game():
             INSERT INTO game_data (game_id, white_player, black_player, white_result, black_result, moves)
             VALUES (%s, %s, %s, %s, %s, %s)
         """
-        values_game_data = (
-            game_id, 
-            game_white, 
-            game_black, 
-            game.get('white', {}).get('result', ''), 
-            game.get('black', {}).get('result', ''), 
-            game_pgn
-        )
+        values_game_data = (game_id, game_white, game_black, game_white_result, game_black_result, game_pgn)
         cursor.execute(insert_game_data_query, values_game_data)
 
         insert_saved_game_query = """
@@ -162,15 +154,32 @@ def save_game():
         values_saved_game = (session['user_id'], game_id)
         cursor.execute(insert_saved_game_query, values_saved_game)
 
+        # Update win_log
+        update_winlog_query = """
+            UPDATE win_log
+            SET white_win = white_win + %s,
+                black_win = black_win + %s,
+                no_of_draws = no_of_draws + %s
+            WHERE player_id = %s
+        """
+        white_win = 1 if game_white_result == "win" else 0
+        black_win = 1 if game_black_result == "win" else 0
+        draw = 1 if game_white_result in ["agreed", "repetition", "timevsinsufficient", "stalemate"] else 0
+        
+        cursor.execute(update_winlog_query, (white_win, black_win, draw, session['user_id']))
+
         connection.commit()
-        return render_template('view_games.html', success="Game saved successfully")
+        flash("Game saved successfully", 'success')
+        return redirect(url_for('view_games'))
     except mysql.connector.IntegrityError:
-        return render_template('view_games.html', error="Game already exists")
+        flash("Game already exists", 'error')
     except mysql.connector.Error as err:
-        return render_template('view_games.html', error=f"Error saving game: {err}")
+        flash(f"Error saving game: {err}", 'error')
     finally:
         cursor.close()
         connection.close()
+    
+    return redirect(url_for('view_games'))
 
 @app.route('/saved_games')
 def saved_games():
@@ -191,7 +200,8 @@ def saved_games():
         saved_games = cursor.fetchall()
         return render_template('saved_games.html', saved_games=saved_games)
     except mysql.connector.Error as err:
-        return render_template('saved_games.html', error=f"Error fetching saved games: {err}")
+        flash(f"Error fetching saved games: {err}", 'error')
+        return redirect(url_for('index'))
     finally:
         cursor.close()
         connection.close()
@@ -208,12 +218,7 @@ def delete_game():
         cursor = connection.cursor()
         
         try:
-            # Delete from saved_games table
-            cursor.execute("DELETE FROM saved_games WHERE chess_com_game_id = (SELECT game_id FROM game_data WHERE id = %s)", (game_id,))
-            
-            # Delete from game_data table
             cursor.execute("DELETE FROM game_data WHERE id = %s", (game_id,))
-            
             connection.commit()
             flash('Game deleted successfully', 'success')
         except mysql.connector.Error as err:
@@ -225,6 +230,31 @@ def delete_game():
         return redirect(url_for('saved_games'))
     
     return render_template('delete_game.html')
+
+@app.route('/view_stats')
+def view_stats():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    connection = create_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    try:
+        query = """
+            SELECT u.username, u.player_id, w.white_win, w.black_win, w.no_of_draws 
+            FROM users u 
+            JOIN win_log w ON u.player_id = w.player_id
+        """
+        cursor.execute(query)
+        user_stats = cursor.fetchall()
+        return render_template('view_stats.html', user_stats=user_stats)
+    except mysql.connector.Error as err:
+        flash(f'Error fetching statistics: {err}', 'error')
+        return redirect(url_for('index'))
+    finally:
+        cursor.close()
+        connection.close()
+
 
 if __name__ == '__main__':
     app.run(debug=True)
